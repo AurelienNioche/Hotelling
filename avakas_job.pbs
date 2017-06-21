@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Maximum time for a single job [hh:mm:ss]
+#PBS -l walltime=00:10:00
+
+#PBS -l nodes=1:ppn=6
+#PBS -l mem=1gb
+#PBS -u anioche
+
+#PBS -o /home/anioche/logs/${PBS_JOBNAME}.out
+#PBS -e /home/anioche/logs/${PBS_JOBNAME}.err
+
+#PBS -m abe
+#PBS -M clusterresultssimulation@gmail.com
+
+cd $PBS_O_WORKDIR
+
+# replace "3.5.2" by your pyenv's virtual environment name.
+# if you do not have pyenv, python version will be unchanged.
+export PYENV_VERSION=3.5.2
+
+python script_to_run.py ${PBS_ARRAYID}
+
+unset PYENV_VERSION
