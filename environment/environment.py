@@ -3,7 +3,7 @@ from tqdm import tqdm
 
 from firm.firm import Firm
 from customer.customer import Customer
-from firm.nn_firms import StrategicNeuralNetwork, NonStrategicNeuralNetwork
+from firm.nn_firms import *
 from neural_network.elman import Elman
 from neural_network.perceptron import MLP
 
@@ -160,7 +160,7 @@ class Environment(object):
 
         self.active_player = (self.active_player + 1) % self.n_firms
 
-    def run(self):
+    def run(self, multi=True):
 
         np.random.seed(self.param["seed"])
 
@@ -178,7 +178,13 @@ class Environment(object):
         customer_extra_view_choices = np.zeros((self.t_max, n_customers), dtype=int)
         customer_utility = np.zeros((self.t_max, n_customers))
 
-        for t in range(self.t_max):
+        if multi:
+            iterable = range(self.t_max)
+
+        else:
+            iterable = tqdm(range(self.t_max))
+
+        for t in iterable:
 
             # New time step
             self.time_step()

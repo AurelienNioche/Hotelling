@@ -19,7 +19,7 @@ def prepare():
 
     t_max = 5000
 
-    firm = "StrategicNeuralNetwork"
+    firm = "FirmOriginal"
     customer = "Customer"
 
     range_transportation_cost = [0, 1]
@@ -70,6 +70,6 @@ def prepare():
         makedirs(cl_parameters["working_folder"])
 
     parameters_file = "{}/cluster_computing_parameters.p".format(cl_parameters["working_folder"])
-    with open(parameters_file, "wb") as f:
 
+    with open(parameters_file, "wb") as f:
         pickle.dump(parameters_list, f)

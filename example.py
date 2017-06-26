@@ -14,10 +14,11 @@ def main():
 
     n_firms = 2
 
-    firms_positions = np.random.randint(1, n_positions + 1, size=n_firms)
-    firms_prices = np.random.randint(1, n_prices + 1, size=n_firms)
+    firm_positions = np.random.randint(1, n_positions + 1, size=n_firms)
+    firm_prices = np.random.randint(1, n_prices + 1, size=n_firms)
 
     transportation_cost = 0.2
+    utility_consumption = 22
 
     firm_alpha = 0.01
     firm_temp = 0.02
@@ -30,9 +31,16 @@ def main():
 
     customer_neural_network = "MLP"  # Only NN
 
-    t_max = 10**3
+    t_max = 5000
 
-    firm = "StrategicNeuralNetwork"
+    # Choose the type of firm you want between:
+    # - "FirmOriginal"
+    # - "FirmGray"
+    # - "FirmUnary
+    # - "FirmLinear
+    # Type of firms differs only for the encoding of entries, but it can have a great impact
+    # on efficiency of the network.
+    firm = "FirmUnary"
     customer = "Customer"
 
     parameters = {
@@ -44,10 +52,11 @@ def main():
         "n_positions": n_positions,
         "n_prices": n_prices,
 
-        "firms_positions": firms_positions,  # Initial positions
-        "firms_prices": firms_prices,  # Initial prices
+        "firm_positions": firm_positions,  # Initial positions
+        "firm_prices": firm_prices,  # Initial prices
 
         "transportation_cost": transportation_cost,
+        "utility_consumption": utility_consumption,
 
         "firm_temp": firm_temp,
         "firm_alpha": firm_alpha,
@@ -63,7 +72,7 @@ def main():
     }
 
     env = Environment(**parameters)
-    results = env.run()
+    results = env.run(multi=False)
 
     fig_producer = FigureProducer(results=results, parameters=parameters,
                                   root_folder=path.expanduser("~/Desktop/HotellingExample"))

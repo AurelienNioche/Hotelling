@@ -211,7 +211,7 @@ class FigureProducer(object):
 
         self.plot_customer_firm_choices(period=customers_choices_plot_period)
 
-        n_firms = len(self.parameters["firms_positions"])
+        n_firms = len(self.parameters["firm_positions"])
         for i in range(n_firms):
             self.plot_positions(player=i, period=other_plots_period)
             self.plot_prices(player=i, period=other_plots_period)
