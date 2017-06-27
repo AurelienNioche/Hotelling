@@ -35,7 +35,7 @@ def main():
 
     # Choose the type of firm you want between:
     # - "FirmOriginal"
-    # - "FirmGray"
+    # - "FirmBinary"
     # - "FirmUnary
     # - "FirmLinear
     # Type of firms differs only for the encoding of entries, but it can have a great impact

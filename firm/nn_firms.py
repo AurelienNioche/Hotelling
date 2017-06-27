@@ -117,7 +117,7 @@ class NeuralNetworkFirm(Firm):
         self.network_input[:] = network_input
 
 
-class FirmGray(NeuralNetworkFirm):
+class FirmBinary(NeuralNetworkFirm):
 
     """
     Use binary encoding for entries. Note that it is requires less entries than the number of possibilities
