@@ -140,24 +140,12 @@ class FirmBinary(NeuralNetworkFirm):
     """
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
 
-        self.cv_position = self._create_converter(self.n_positions)
-        self.cv_price = self._create_converter(self.n_prices)
+        super().__init__(**kwargs)
 
     def _get_network_input_size(self):
 
         return self.n_firms * (len(format(self.n_positions, "b")) + len(format(self.n_prices, "b")))
-
-    def _set_network_input(self, x, price, opponents_positions, opponents_prices):
-
-        network_input = self.cv_position[x - 1] + self.cv_price[price - 1]
-
-        for opp_pos, opp_price in zip(opponents_positions, opponents_prices):
-            network_input += self.cv_position[opp_pos - 1]
-            network_input += self.cv_price[opp_price - 1]
-
-        self.network_input[:] = network_input
 
     @staticmethod
     def _create_converter(n):
