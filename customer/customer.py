@@ -92,7 +92,8 @@ class Customer(object):
     def _learn(self):
 
         # Set input
-        self._set_network_input()
+        i = np.where(self.extra_view_possibilities == self.extra_view)[0][0]
+        self._set_network_input(i)
 
         # Propagation stuff
         self.network.propagate_forward(self.network_input)
@@ -105,8 +106,7 @@ class Customer(object):
     def _get_network_outputs(self):
 
         for i in range(len(self.extra_view_possibilities)):
-            self.network_input[:] = 0
-            self.network_input[i] = 1
+            self._set_network_input(i)
             self.extra_view_values[i] = self.network.propagate_forward(self.network_input)
 
     def _get_network_input_size(self):
@@ -118,9 +118,7 @@ class Customer(object):
 
         raise Exception("'Customer' is an abstract class. You should implement one of its child.")
 
-    def _set_network_input(self):
-
-        i = np.where(self.extra_view_possibilities == self.extra_view)[0][0]
+    def _set_network_input(self, i):
 
         self.network_input[:] = self.cv_extra_view[i]
 
