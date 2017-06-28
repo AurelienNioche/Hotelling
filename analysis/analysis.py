@@ -318,7 +318,7 @@ class StatsExtractor(object):
         x = np.asarray(self.stats.data[var1])
         y = np.asarray(self.stats.data[var2])
 
-        plt.scatter(x=x, y=y, color="black")
+        plt.scatter(x=x, y=y, color="black", s=1)
         plt.xlim(range_var[var1])
         plt.ylim(range_var[var2])
         plt.xlabel(self.format_label(var1))
