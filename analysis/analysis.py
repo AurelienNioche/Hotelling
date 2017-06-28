@@ -11,7 +11,6 @@ from analysis.parameters import an_parameters
 
 
 class MacOSFile(object):
-
     def __init__(self, f):
         self.f = f
 
@@ -45,26 +44,21 @@ class MacOSFile(object):
 
 
 class Data(object):
-
     def __init__(self):
-
         self.working_folder = an_parameters["working_folder"]
         self.data = None
         self.pickle_file = None
 
     def load(self):
-
         with open(self.pickle_file, "rb") as f:
             self.data = pickle.load(MacOSFile(f))
 
     def write(self):
-
         with open(self.pickle_file, "wb") as f:
             pickle.dump(self.data, MacOSFile(f), protocol=pickle.HIGHEST_PROTOCOL)
 
 
 class Stats(Data):
-
     def __init__(self):
         super().__init__()
         self.pickle_file = "{}/stats.p".format(self.working_folder)
@@ -74,7 +68,6 @@ class Stats(Data):
 
 
 class SingleEcoData(Data):
-
     def __init__(self, data_type, economy_folder):
         super().__init__()
         self.data_type = data_type
@@ -82,7 +75,6 @@ class SingleEcoData(Data):
         self.load()
 
     def load(self):
-
         file_list = glob.glob("{}/HC_{}_*".format(self.folder, self.data_type))
         if file_list:
             self.pickle_file = file_list[0]
@@ -90,12 +82,10 @@ class SingleEcoData(Data):
 
 
 class Results(SingleEcoData):
-
     def __init__(self, economy_folder):
         super().__init__(data_type="results", economy_folder=economy_folder)
 
     def is_valid(self, time_window):
-
         # Select only economies with positives profits for both firms
         cond = \
             np.sum(self.data["profits"][-time_window:, 0] == 0) < time_window // 2 and \
@@ -104,9 +94,7 @@ class Results(SingleEcoData):
 
 
 class Variable(Data):
-
     def __init__(self, name):
-
         super().__init__()
         self.name = name
         self.pickle_file = "{}/{}.p".format(self.working_folder, name)
@@ -116,16 +104,28 @@ class Variable(Data):
 
 
 class Parameters(SingleEcoData):
-
     def __init__(self, economy_folder):
         super().__init__(data_type="parameters", economy_folder=economy_folder)
 
 
 class StatsExtractor(object):
+    t_max = an_parameters["t_max"]
+    time_window = an_parameters["time_window"]
 
-    time_window = 100
     working_folder = an_parameters["working_folder"]
     fig_folder = an_parameters["fig_folder"]
+
+    display = an_parameters["display"]
+
+    linear_regression = an_parameters["linear_regression"]
+
+    scatter_vars = an_parameters["scatter_vars"]
+    curve_vars = an_parameters["curve_vars"]
+
+    range_var = an_parameters["range_var"]
+
+    customer_firm_choices_period = an_parameters["customer_firm_choices_period"]
+    firm_period = an_parameters["firm_period"]
 
     def __init__(self):
 
@@ -144,7 +144,7 @@ class StatsExtractor(object):
         if self.stats.data is None:
             self.extract_data()
         else:
-            print("Stats file loaded in {} s.".format(time()-t))
+            print("Stats file loaded in {} s.".format(time() - t))
 
         self.do_plots()
 
@@ -156,9 +156,9 @@ class StatsExtractor(object):
         self.get_folders()
 
         for label in ["transportation_cost", "delta_position", "delta_price",
-                      "profits", "change_position", "change_price", "customer_extra_view_choices",
-                      "firm_temp", "firm_alpha", "customer_temp", "customer_alpha",
-                      "customer_utility", "customer_utility_consumption", "idx"]:
+               "profits", "change_position", "change_price", "customer_extra_view_choices",
+               "firm_temp", "firm_alpha", "customer_temp", "customer_alpha",
+               "customer_utility", "customer_utility_consumption", "idx"]:
             self.stats.data[label] = []
 
         for i, folder in tqdm(enumerate(self.folders)):
@@ -168,7 +168,6 @@ class StatsExtractor(object):
 
             if parameters.data is not None and results.data is not None and \
                     results.is_valid(time_window=self.time_window):
-
                 self.stats.data["customer_utility_consumption"].append(
                     parameters.data["utility_consumption"]
                 )
@@ -223,49 +222,11 @@ class StatsExtractor(object):
         with open("{}/stats.txt".format(self.fig_folder), "w"):
             pass
 
-        range_var = {
-            "firm_temp": (0.0095, 0.0305),
-            "customer_temp": (0.0095, 0.0305),
-            "firm_alpha": (0.009, 0.101),
-            "customer_alpha": (0.009, 0.101),
-            "transportation_cost": (-0.01, 1.01),
-            "delta_price": (-0.1, 8.1),
-            "delta_position": (-0.1, 8.1),
-            "profits": (9, 62.1),
-            "customer_utility": (-0.1, 20.1),
-            "customer_utility_consumption": (11.9, 23.1),
-            "customer_extra_view_choices": (-0.1, 10.1)
-        }
+        for var1, var2 in self.scatter_vars:
+            self.scatter_plot(var1=var1, var2=var2, range_var=self.range_var, linear_regression=self.linear_regression)
 
-        for var1, var2 in [
-            ("firm_temp", "delta_position"),
-            ("firm_alpha", "delta_position"),
-            ("firm_temp", "delta_price"),
-            ("firm_alpha", "delta_price"),
-            ("customer_temp", "delta_position"),
-            ("customer_alpha", "delta_position"),
-            ("customer_temp", "delta_price"),
-            ("customer_alpha", "delta_price"),
-            ("customer_extra_view_choices", "profits"),
-            ("customer_extra_view_choices", "delta_price"),
-            ("customer_extra_view_choices", "delta_position"),
-            ("customer_utility_consumption", "delta_price"),
-            ("customer_utility_consumption", "delta_position"),
-            ("customer_utility_consumption", "customer_extra_view_choices"),
-            ("transportation_cost", "customer_extra_view_choices"),
-            ("transportation_cost", "delta_position"),
-            ("transportation_cost", "delta_price"),
-            ("transportation_cost", "profits"),
-            ("transportation_cost", "customer_utility"),
-            ("profits", "customer_utility"),
-            ("delta_position", "customer_utility"),
-            ("delta_position", "profits"),
-            ("delta_position", "delta_price")
-        ]:
-            self.scatter_plot(var1=var1, var2=var2, range_var=range_var, linear_regression=True)
-
-        for var in ["profits", "customer_utility"]:
-            self.curve_plot(variable=var)
+        for var in self.curve_vars:
+            self.curve_plot(variable=var, t_max=self.t_max)
 
         self.individual_plot()
 
@@ -302,23 +263,23 @@ class StatsExtractor(object):
                 root_folder="{}/{}_idx{}".format(self.fig_folder, ex_type, idx)
             )
 
-            fp.plot_customer_firm_choices(period=25)
-            for firm in [0, 1]:
+            fp.plot_customer_firm_choices(period=self.customer_firm_choices_period)
 
-                fp.plot_profits(player=firm, period=5000)
-                fp.plot_prices(player=firm, period=5000)
-                fp.plot_positions(player=firm, period=5000)
+            for firm in [0, 1]:
+                fp.plot_profits(player=firm, period=self.firm_period)
+                fp.plot_prices(player=firm, period=self.firm_period)
+                fp.plot_positions(player=firm, period=self.firm_period)
 
             fp.write_parameters()
 
-    def scatter_plot(self, var1, var2, range_var, linear_regression=False, display=False):
+    def scatter_plot(self, var1, var2, range_var, linear_regression):
 
         print("Doing scatter plot '{}' against '{}'.".format(var2, var1))
 
         x = np.asarray(self.stats.data[var1])
         y = np.asarray(self.stats.data[var2])
 
-        plt.scatter(x=x, y=y, color="black", s=1)
+        plt.scatter(x=x, y=y, color="black")
         plt.xlim(range_var[var1])
         plt.ylim(range_var[var2])
         plt.xlabel(self.format_label(var1))
@@ -329,7 +290,6 @@ class StatsExtractor(object):
             plt.plot(x, intercept + x * slope, c="black", lw=2)
 
             with open("{}/stats.txt".format(self.fig_folder), "a") as f:
-
                 f.write(
                     "*****\n" +
                     "{} against {}\n".format(self.format_label(var2), self.format_label(var1)) +
@@ -342,11 +302,12 @@ class StatsExtractor(object):
 
         plt.savefig("{}/scatterplot_{}_{}.pdf".format(self.fig_folder, var1, var2))
 
-        if display:
+        if self.display:
             plt.show()
+
         plt.close()
 
-    def curve_plot(self, variable, t_max=5000, display=False):
+    def curve_plot(self, variable, t_max):
 
         print("Doing curve plot for variable '{}'.".format(variable))
 
@@ -359,7 +320,6 @@ class StatsExtractor(object):
         std = np.zeros(t_max)
 
         for t in range(t_max):
-
             mean[t] = np.mean(var.data[t])
             std[t] = np.std(var.data[t])
 
@@ -370,8 +330,10 @@ class StatsExtractor(object):
         plt.xlabel("t")
         plt.ylabel(self.format_label(variable))
         plt.savefig("{}/curve_plot_{}.pdf".format(self.fig_folder, variable))
-        if display:
+
+        if self.display:
             plt.show()
+
         plt.close()
 
     @staticmethod
@@ -385,7 +347,7 @@ class StatsExtractor(object):
 
         move = []
         for firm in range(2):
-            move.append(np.mean([abs(data[i] - data[i+1]) for i in range(len(data)-1)]))
+            move.append(np.mean([abs(data[i] - data[i + 1]) for i in range(len(data) - 1)]))
 
         return np.mean(move)
 
@@ -416,7 +378,7 @@ class StatsExtractor(object):
 
         self.folders = glob.glob("{}/HC_*".format(self.working_folder))
 
-    def extract_single_dimension(self, variable, t_max=5000):
+    def extract_single_dimension(self, variable, t_max):
 
         print("Extracting variable '{}'.".format(variable.name))
 
@@ -431,6 +393,7 @@ class StatsExtractor(object):
                 variable.data[t].append(
                     results.data[variable.name][t]
                 )
+
         print("Convert in array.")
         variable.data = np.asarray(variable.data)
         print("Write in pickle.")
@@ -441,7 +404,9 @@ class StatsExtractor(object):
 
 def main():
 
-    stats_extractor = StatsExtractor()
-    stats_extractor.run()
+    try:
+        stats_extractor = StatsExtractor()
+        stats_extractor.run()
 
-
+    except Exception:
+        raise Exception("Check in the first place if analysis and production parameters are identical.")
