@@ -23,7 +23,7 @@ class NeuralNetworkFirm(Firm):
         self.input_size = self._get_network_input_size()
 
         # Size of input depend of the level of strategy
-        self.network_input = np.zeros(self.input_size)
+        self.network_input = None
 
         # Output of network is expected profit; this will contain expected profit for each option
         self.network_outputs = np.zeros(self.options.size)
@@ -37,23 +37,25 @@ class NeuralNetworkFirm(Firm):
         self.cv_position = self._create_converter(self.n_positions)
         self.cv_price = self._create_converter(self.n_prices)
 
+        self.encoded_opponents_strategies = None
+
         self._set_up()
 
     def change_in_opponents_strategies(self, old_opponents_positions, old_opponents_prices):
 
-        self._learn(
-            opponents_positions=old_opponents_positions, opponents_prices=old_opponents_prices
-        )
+        self._encode_opponents_strategies(opponents_positions=old_opponents_positions,
+                                          opponents_prices=old_opponents_prices)
+
+        self._learn()
 
     def select_strategy(self, opponents_positions, opponents_prices):
 
-        self._learn(
-            opponents_positions=opponents_positions, opponents_prices=opponents_prices
-        )
+        self._encode_opponents_strategies(opponents_positions=opponents_positions,
+                                          opponents_prices=opponents_prices)
 
-        self._get_network_outputs(
-            opponents_positions=opponents_positions, opponents_prices=opponents_prices
-        )
+        self._learn()
+
+        self._get_network_outputs()
 
         p = softmax(self.network_outputs, temp=self.temp)
 
@@ -61,12 +63,18 @@ class NeuralNetworkFirm(Firm):
         self.x = self.strategies[st]["position"]
         self.price = self.strategies[st]["price"]
 
+    def _encode_opponents_strategies(self, opponents_positions, opponents_prices):
+
+        self.encoded_opponents_strategies = []
+        for opp_pos, opp_price in zip(opponents_positions, opponents_prices):
+            self.encoded_opponents_strategies += self.cv_position[opp_pos - 1] + self.cv_price[opp_price - 1]
+
     def _create_network(self, model):
 
         if model == MLP:
-            return MLP(self.network_input.size, self.network_input.size, 1)
+            return MLP(self.input_size, self.input_size, 1)
         else:
-            return model(self.network_input.size, 1)
+            return model(self.input_size, 1)
 
     def _get_strategies(self):
 
@@ -80,19 +88,17 @@ class NeuralNetworkFirm(Firm):
 
         self.network.reset()
 
-    def _get_network_outputs(self, opponents_positions, opponents_prices):
+    def _get_network_outputs(self):
 
         for i in self.options:
             self._set_network_input(
-                x=self.strategies[i]["position"], price=self.strategies[i]["price"],
-                opponents_positions=opponents_positions, opponents_prices=opponents_prices
-            )
+                x=self.strategies[i]["position"], price=self.strategies[i]["price"])
+
             self.network_outputs[i] = self.network.propagate_forward(self.network_input)
 
-    def _learn(self, opponents_positions, opponents_prices):
+    def _learn(self):
 
-        self._set_network_input(x=self.x, price=self.price,
-                                opponents_prices=opponents_prices, opponents_positions=opponents_positions)
+        self._set_network_input(x=self.x, price=self.price)
         self.network.propagate_forward(self.network_input)
         self.network.propagate_backward(target=self._u(), lrate=self.alpha,
                                         momentum=self.momentum)
@@ -106,15 +112,12 @@ class NeuralNetworkFirm(Firm):
 
         raise Exception("'NeuralNetworkFirm' is an abstract class. You should implement one of its child.")
 
-    def _set_network_input(self, x, price, opponents_positions, opponents_prices):
+    def _set_network_input(self, x, price):
 
-        network_input = self.cv_position[x - 1] + self.cv_price[price - 1]
-
-        for opp_pos, opp_price in zip(opponents_positions, opponents_prices):
-            network_input += self.cv_position[opp_pos - 1]
-            network_input += self.cv_price[opp_price - 1]
-
-        self.network_input[:] = network_input
+        self.network_input = \
+            self.cv_position[x - 1] + \
+            self.cv_price[price - 1] + \
+            self.encoded_opponents_strategies
 
 
 class FirmBinary(NeuralNetworkFirm):
