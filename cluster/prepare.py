@@ -12,15 +12,15 @@ def prepare():
     n_firms = 2
 
     firm_momentum = 0.0  # Only NN
-    firm_neural_network = "MLP"  # Only NN
+    firm_neural_network = "Elman"  # Only NN
 
     customer_momentum = 0.0  # Only NN
-    customer_neural_network = "MLP"  # Only NN
+    customer_neural_network = "Elman"  # Only NN
 
     t_max = 5000
 
-    firm = "FirmOriginal"
-    customer = "Customer"
+    firm = "FirmUnary"
+    customer = "CustomerUnary"
 
     range_transportation_cost = [0, 1]
     range_firm_alpha = [0.01, 0.10]

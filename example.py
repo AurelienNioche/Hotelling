@@ -23,13 +23,13 @@ def main():
     firm_alpha = 0.01
     firm_temp = 0.02
     firm_momentum = 0.0  # Only NN
-    firm_neural_network = "MLP"  # Only NN
+    firm_neural_network = "Elman"  # Only NN
 
     customer_alpha = 0.01
     customer_temp = 0.02
     customer_momentum = 0.0  # Only NN
 
-    customer_neural_network = "MLP"  # Only NN
+    customer_neural_network = "Elman"  # Only NN
 
     t_max = 5000
 
@@ -41,7 +41,7 @@ def main():
     # Type of firms differs only for the encoding of entries, but it can have a great impact
     # on efficiency of the network.
     firm = "FirmUnary"
-    customer = "Customer"
+    customer = "CustomerUnary"
 
     parameters = {
         "seed": seed,

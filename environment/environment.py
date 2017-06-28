@@ -2,7 +2,7 @@ import numpy as np
 from tqdm import tqdm
 
 from firm.firm import Firm
-from customer.customer import Customer
+from customer.customer import *
 from firm.nn_firms import *
 from neural_network.elman import Elman
 from neural_network.perceptron import MLP
