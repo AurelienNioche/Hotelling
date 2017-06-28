@@ -33,9 +33,11 @@ class Customer(object):
         self.utility_min = - max(self.extra_view_possibilities) * self.t_cost
 
         # Neural network...
-        self.network_input = np.zeros(len(self.extra_view_possibilities))
+        self.network_input = np.zeros(self._get_network_input_size())
         self.network = self._create_network(kwargs["neural_network"])
         self.momentum = kwargs["momentum"]
+
+        self.cv_extra_view = self._create_converter(len(self.extra_view_possibilities))
 
         self._set_up()
 
@@ -90,7 +92,7 @@ class Customer(object):
     def _learn(self):
 
         # Set input
-        self.network_input[:] = self.extra_view_possibilities[:] == self.extra_view
+        self._set_network_input()
 
         # Propagation stuff
         self.network.propagate_forward(self.network_input)
@@ -106,3 +108,163 @@ class Customer(object):
             self.network_input[:] = 0
             self.network_input[i] = 1
             self.extra_view_values[i] = self.network.propagate_forward(self.network_input)
+
+    def _get_network_input_size(self):
+
+        raise Exception("'Customer' is an abstract class. You should implement one of its child.")
+
+    @staticmethod
+    def _create_converter(n):
+
+        raise Exception("'Customer' is an abstract class. You should implement one of its child.")
+
+    def _set_network_input(self):
+
+        i = np.where(self.extra_view_possibilities == self.extra_view)[0][0]
+
+        self.network_input[:] = self.cv_extra_view[i]
+
+
+class CustomerBinary(Customer):
+
+    """
+    Use binary encoding for entries. Note that it is requires less entries than the number of possibilities
+    (number of entries for n possibilities is approx log2(n)).
+    For example, for 10 possibilities:
+    [ 0.  0.  0.  0.]
+    [ 0.  0.  0.  1.]
+    [ 0.  0.  1.  0.]
+    [ 0.  0.  1.  1.]
+    [ 0.  1.  0.  0.]
+    [ 0.  1.  0.  1.]
+    [ 0.  1.  1.  0.]
+    [ 0.  1.  1.  1.]
+    [ 1.  0.  0.  0.]
+    [ 1.  0.  0.  1.]
+
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def _get_network_input_size(self):
+
+        return len(format(len(self.extra_view_possibilities-1), "b"))
+
+    @staticmethod
+    def _create_converter(n):
+
+        cv = {"0": -1, "1": 1}
+        len_str = len(format(n - 1, 'b'))
+        return [[cv[j] for j in format(i, '0{}b'.format(len_str))] for i in range(n)]
+
+
+class CustomerOriginal(Customer):
+
+    """
+    First attempt for encoding.
+    For example, for 10 possibilities:
+    [ 1.  0.  0.  0.  0.  0.  0.  0.  0.  0.]
+    [ 0.  1.  0.  0.  0.  0.  0.  0.  0.  0.]
+    [ 0.  0.  1.  0.  0.  0.  0.  0.  0.  0.]
+    [ 0.  0.  0.  1.  0.  0.  0.  0.  0.  0.]
+    [ 0.  0.  0.  0.  1.  0.  0.  0.  0.  0.]
+    [ 0.  0.  0.  0.  0.  1.  0.  0.  0.  0.]
+    [ 0.  0.  0.  0.  0.  0.  1.  0.  0.  0.]
+    [ 0.  0.  0.  0.  0.  0.  0.  1.  0.  0.]
+    [ 0.  0.  0.  0.  0.  0.  0.  0.  1.  0.]
+    [ 0.  0.  0.  0.  0.  0.  0.  0.  0.  1.]
+
+    """
+
+    def __init__(self, **kwargs):
+
+        super().__init__(**kwargs)
+
+    def _get_network_input_size(self):
+
+        return len(self.extra_view_possibilities)
+
+    @staticmethod
+    def _create_converter(n):
+
+        out = []
+        for i in range(n):
+            a = np.zeros(n)
+            a[:] = - 1
+            a[i] = 1
+            out.append(list(a))
+
+        return out
+
+
+class CustomerUnary(Customer):
+
+    """
+    Use unary encoding for entries.
+    For instance, for 10 possibilities:
+    [ 0.  0.  0.  0.  0.  0.  0.  0.  0.  0.]
+    [ 1.  0.  0.  0.  0.  0.  0.  0.  0.  0.]
+    [ 1.  1.  0.  0.  0.  0.  0.  0.  0.  0.]
+    [ 1.  1.  1.  0.  0.  0.  0.  0.  0.  0.]
+    [ 1.  1.  1.  1.  0.  0.  0.  0.  0.  0.]
+    [ 1.  1.  1.  1.  1.  0.  0.  0.  0.  0.]
+    [ 1.  1.  1.  1.  1.  1.  0.  0.  0.  0.]
+    [ 1.  1.  1.  1.  1.  1.  1.  0.  0.  0.]
+    [ 1.  1.  1.  1.  1.  1.  1.  1.  0.  0.]
+    [ 1.  1.  1.  1.  1.  1.  1.  1.  1.  0.]
+
+    """
+
+    def __init__(self, **kwargs):
+
+        super().__init__(**kwargs)
+
+    def _get_network_input_size(self):
+
+        return len(self.extra_view_possibilities)
+
+    @staticmethod
+    def _create_converter(n):
+        out = []
+        for i in range(n):
+            a = np.zeros(n)
+            a[:] = - 1
+            a[:i] = 1
+            out.append(list(a))
+
+        return out
+
+
+class CustomerLinear(Customer):
+
+    """
+    Use unary encoding for entries.
+    For instance, for 10 possibilities:
+    [ 0.0 ]
+    [ 0.111111111111 ]
+    [ 0.222222222222 ]
+    [ 0.333333333333 ]
+    [ 0.444444444444 ]
+    [ 0.555555555556 ]
+    [ 0.666666666667 ]
+    [ 0.777777777778 ]
+    [ 0.888888888889 ]
+    [ 1.0 ]
+    """
+
+    def __init__(self, **kwargs):
+
+        super().__init__(**kwargs)
+
+    def _get_network_input_size(self):
+
+        return 1
+
+    @staticmethod
+    def _create_converter(n):
+
+        a = np.arange(n, dtype=float)
+        a[:] = (a-min(a)) / (max(a) - min(a))  # Normalize between 0 an 1
+        a[:] -= 0.5  # Center around 0
+        return [[i] for i in a]
