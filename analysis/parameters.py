@@ -2,8 +2,8 @@ from os import path
 
 
 an_parameters = {
-    "working_folder": path.expanduser("~/Desktop/HotellingAvakasEncodingElmanUnary"),
-    "fig_folder": path.expanduser("~/Desktop/HotellingAvakasEncodingElmanUnaryFigs"),
+    "working_folder": path.expanduser("~/Desktop/HotellingExperimental/data"),
+    "fig_folder": path.expanduser("~/Desktop/HotellingExperimental/figures"),
 
     "t_max": 5000,
     "time_window": 100,

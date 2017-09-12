@@ -8,6 +8,7 @@ from neural_network.perceptron import MLP
 class NeuralNetworkFirm(Firm):
 
     def __init__(self, **kwargs):
+
         super().__init__(**kwargs)
 
         self.alpha = kwargs["alpha"]
@@ -264,5 +265,3 @@ class FirmLinear(NeuralNetworkFirm):
         a[:] = (a-min(a)) / (max(a) - min(a))  # Normalize between 0 an 1
         a[:] -= 0.5  # Center around 0
         return [[i] for i in a]
-
-
