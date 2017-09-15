@@ -22,12 +22,13 @@ def prepare():
     firm = "StrategicNeuralNetwork"
     customer = "Customer"
 
-    range_transportation_cost = [0, 1]
     range_firm_alpha = [0.01, 0.10]
     range_firm_temp = [0.01, 0.03]
     range_customer_alpha = [0.01, 0.10]
     range_customer_temp = [0.01, 0.03]
-    range_utility_consumption = [n_prices+1, (n_prices*2) + 1]
+
+    transportation_cost = 1.5
+    utility_consumption = 21  # [n_prices+1, (n_prices*2) + 1]
 
     parameters_list = []
 
@@ -44,8 +45,8 @@ def prepare():
             "n_positions": n_positions,
             "n_prices": n_prices,
 
-            "range_transportation_cost": range_transportation_cost,
-            "range_utility_consumption": range_utility_consumption,
+            "transportation_cost": transportation_cost,
+            "utility_consumption": utility_consumption,
 
             "range_firm_temp": range_firm_temp,
             "range_firm_alpha": range_firm_alpha,
