@@ -27,7 +27,7 @@ def prepare():
     range_customer_alpha = [0.01, 0.10]
     range_customer_temp = [0.01, 0.03]
 
-    transportation_cost = 1.5
+    transportation_cost = 2
     utility_consumption = 21  # [n_prices+1, (n_prices*2) + 1]
 
     parameters_list = []
