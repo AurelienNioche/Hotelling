@@ -3,7 +3,8 @@ from os import path
 
 an_parameters = {
     "working_folder": path.expanduser("~/Desktop/HotellingExperimental/data"),
-    "fig_folder": path.expanduser("~/Desktop/HotellingExperimental/figures2"),
+    "pickle_folder": path.expanduser("~/Desktop/HotellingExperimental/data_pickle"),
+    "fig_folder": path.expanduser("~/Desktop/HotellingExperimental/figures"),
 
     "t_max": 5000,
     "time_window": 100,
@@ -12,6 +13,8 @@ an_parameters = {
 
     "display": False,
     "linear_regression": True,
+
+    "use_french": True,
 
     "scatter_vars": [
         # ("firm_temp", "delta_position"),
@@ -25,9 +28,9 @@ an_parameters = {
         # ("customer_alpha", "delta_price"),
         # ("customer_extra_view_choices", "profits"),
         # ("customer_extra_view_choices", "delta_price"),
-        # ("customer_utility_consumption", "delta_price"),
-        # ("customer_utility_consumption", "delta_position"),
-        # ("customer_utility_consumption", "customer_extra_view_choices"),
+        # ("utility_consumption", "delta_price"),
+        # ("utility_consumption", "delta_position"),
+        # ("utility_consumption", "customer_extra_view_choices"),
         ("transportation_cost", "customer_extra_view_choices"),
         # ("transportation_cost", "delta_position"),
         # ("transportation_cost", "delta_price"),
@@ -46,13 +49,27 @@ an_parameters = {
         "customer_temp": (0.0095, 0.0305),
         "firm_alpha": (0.009, 0.101),
         "customer_alpha": (0.009, 0.101),
-        "transportation_cost": (-0.01, 1.01),
+        "transportation_cost": (-0.01, 1.51),
         "delta_price": (-0.1, 8.1),
         "delta_position": (-0.1, 8.1),
         "profits": (9, 62.1),
         "customer_utility": (-0.1, 20.1),
-        "customer_utility_consumption": (11.9, 23.1),
+        "utility_consumption": (11.9, 23.1),
         "customer_extra_view_choices": (-0.1, 10.1)
     },
+
+    "french_mapping": {
+        "firm_temp": r"$\tau_f$",
+        "customer_temp": r"$\tau_c$",
+        "firm_alpha": r"$\alpha_f$",
+        "customer_alpha": r"$\alpha_c$",
+        "transportation_cost": "Coût de transport",
+        "delta_price": "Ecart de prix moyen entre les firmes",
+        "delta_position": "Distance moyenne entre les firmes",
+        "profits": "Profit moyen des firmes",
+        "customer_utility": "Utilité moyenne des consommateurs",
+        "utility_consumption": "Utilité à consommer",
+        "customer_extra_view_choices": "Périmètre moyen d'exploration"
+    }
 }
 

@@ -1,118 +1,15 @@
 from pylab import np, plt
-import pickle
 
 import glob
 from tqdm import tqdm
 from os import path, makedirs
 from time import time
 from scipy.stats import linregress
+from matplotlib import cm
 
 from graph.graph import FigureProducer
 from analysis.parameters import an_parameters
-
-
-class MacOSFile(object):
-
-    def __init__(self, f):
-        self.f = f
-
-    def __getattr__(self, item):
-        return getattr(self.f, item)
-
-    def read(self, n):
-        # print("reading total_bytes=%s" % n, flush=True)
-        if n >= (1 << 31):
-            buffer = bytearray(n)
-            idx = 0
-            while idx < n:
-                batch_size = min(n - idx, 1 << 31 - 1)
-                # print("reading bytes [%s,%s)..." % (idx, idx + batch_size), end="", flush=True)
-                buffer[idx:idx + batch_size] = self.f.read(batch_size)
-                # print("done.", flush=True)
-                idx += batch_size
-            return buffer
-        return self.f.read(n)
-
-    def write(self, buffer):
-        n = len(buffer)
-        print("Writing total_bytes=%s..." % n, flush=True)
-        idx = 0
-        while idx < n:
-            batch_size = min(n - idx, 1 << 31 - 1)
-            print("Writing bytes [%s, %s)... " % (idx, idx + batch_size), end="", flush=True)
-            self.f.write(buffer[idx:idx + batch_size])
-            print("Done.", flush=True)
-            idx += batch_size
-
-
-class Data(object):
-
-    def __init__(self):
-        self.working_folder = an_parameters["working_folder"]
-        self.data = None
-        self.pickle_file = None
-
-    def load(self):
-        with open(self.pickle_file, "rb") as f:
-            self.data = pickle.load(MacOSFile(f))
-
-    def write(self):
-        with open(self.pickle_file, "wb") as f:
-            pickle.dump(self.data, MacOSFile(f), protocol=pickle.HIGHEST_PROTOCOL)
-
-
-class Stats(Data):
-
-    def __init__(self):
-        super().__init__()
-        self.pickle_file = "{}/stats.p".format(self.working_folder)
-
-        if path.exists(self.pickle_file):
-            self.load()
-
-
-class SingleEcoData(Data):
-
-    def __init__(self, data_type, economy_folder):
-        super().__init__()
-        self.data_type = data_type
-        self.folder = economy_folder
-        self.load()
-
-    def load(self):
-        file_list = glob.glob("{}/HC_{}_*".format(self.folder, self.data_type))
-        if file_list:
-            self.pickle_file = file_list[0]
-            super().load()
-
-
-class Results(SingleEcoData):
-
-    def __init__(self, economy_folder):
-        super().__init__(data_type="results", economy_folder=economy_folder)
-
-    def is_valid(self, time_window):
-        # Select only economies with positives profits for both firms
-        cond = \
-            np.sum(self.data["profits"][-time_window:, 0] == 0) < time_window // 2 and \
-            np.sum(self.data["profits"][-time_window:, 1] == 0) < time_window // 2
-        return cond
-
-
-class Variable(Data):
-
-    def __init__(self, name):
-        super().__init__()
-        self.name = name
-        self.pickle_file = "{}/{}.p".format(self.working_folder, name)
-
-        if path.exists(self.pickle_file):
-            self.load()
-
-
-class Parameters(SingleEcoData):
-    def __init__(self, economy_folder):
-        super().__init__(data_type="parameters", economy_folder=economy_folder)
+from analysis.data import Data, Stats, Parameters, Results, Variable
 
 
 class StatsExtractor(object):
@@ -121,26 +18,11 @@ class StatsExtractor(object):
     time_window = an_parameters["time_window"]
 
     working_folder = an_parameters["working_folder"]
-    fig_folder = an_parameters["fig_folder"]
-
-    display = an_parameters["display"]
-
-    linear_regression = an_parameters["linear_regression"]
-
-    scatter_vars = an_parameters["scatter_vars"]
-    curve_vars = an_parameters["curve_vars"]
-
-    range_var = an_parameters["range_var"]
-
-    customer_firm_choices_period = an_parameters["customer_firm_choices_period"]
-    firm_period = an_parameters["firm_period"]
 
     def __init__(self):
 
         self.data = Data()
         self.stats = Stats()
-
-        self.create_fig_folder()
 
         self.folders = None
 
@@ -156,8 +38,6 @@ class StatsExtractor(object):
         if n_select is not None:
             self.make_a_selection(n_select=n_select)
 
-        self.do_plots()
-
     def extract_data(self):
 
         print("Extract data...")
@@ -169,7 +49,7 @@ class StatsExtractor(object):
                 "transportation_cost", "delta_position", "delta_price",
                 "profits", "change_position", "change_price", "customer_extra_view_choices",
                 "firm_temp", "firm_alpha", "customer_temp", "customer_alpha",
-                "customer_utility", "customer_utility_consumption", "idx"]:
+                "customer_utility", "utility_consumption", "idx"]:
             self.stats.data[label] = []
 
         for i, folder in tqdm(enumerate(self.folders)):
@@ -179,48 +59,41 @@ class StatsExtractor(object):
 
             if parameters.data is not None and results.data is not None and \
                     results.is_valid(time_window=self.time_window):
-                self.stats.data["customer_utility_consumption"].append(
-                    parameters.data["utility_consumption"]
-                )
-                self.stats.data["transportation_cost"].append(
-                    parameters.data["transportation_cost"]
-                )
-                self.stats.data["firm_temp"].append(
-                    parameters.data["firm_temp"]
-                )
-                self.stats.data["firm_alpha"].append(
-                    parameters.data["firm_alpha"]
-                )
-                self.stats.data["customer_alpha"].append(
-                    parameters.data["customer_alpha"]
-                )
-                self.stats.data["customer_temp"].append(
-                    parameters.data["customer_temp"]
-                )
 
-                self.stats.data["delta_position"].append(
-                    self.extract_delta(results.data["positions"][-self.time_window:])
-                )
-                self.stats.data["delta_price"].append(
-                    self.extract_delta(results.data["prices"][-self.time_window:])
-                )
+                for label in [
+                        "utility_consumption", "transportation_cost",
+                        "firm_alpha", "firm_temp",
+                        "customer_alpha", "customer_temp"
+                ]:
 
-                self.stats.data["customer_extra_view_choices"].append(
-                    np.mean(results.data["customer_extra_view_choices"][-self.time_window:])
-                )
-                self.stats.data["profits"].append(
-                    np.mean(results.data["profits"][-self.time_window:])
-                )
-                self.stats.data["customer_utility"].append(
-                    np.mean(results.data["customer_utility"][-self.time_window:])
-                )
+                    self.stats.data[label].append(
+                        parameters.data[label]
+                    )
 
-                self.stats.data["change_position"].append(
-                    self.extract_change(results.data["positions"][-self.time_window:])
-                )
-                self.stats.data["change_price"].append(
-                    self.extract_change(results.data["prices"][-self.time_window:])
-                )
+                for results_label, stats_label in [
+                    ("positions", "delta_position"), ("prices", "delta_price")
+                ]:
+
+                    self.stats.data[stats_label].append(
+                        self.extract_delta(results.data[results_label][-self.time_window:])
+                    )
+
+                for label in [
+                    "customer_extra_view_choices",
+                    "profits",
+                    "customer_utility"
+                ]:
+                    self.stats.data[label].append(
+                        np.mean(results.data[label][-self.time_window:])
+                    )
+
+                for results_label, stats_label in [
+                    ("positions", "change_position"), ("prices", "change_price")
+                ]:
+
+                    self.stats.data[stats_label].append(
+                        self.extract_change(results.data[results_label][-self.time_window:])
+                    )
 
                 self.stats.data["idx"].append(i)
 
@@ -248,7 +121,84 @@ class StatsExtractor(object):
 
         print("Selection done.")
 
-    def do_plots(self):
+    @staticmethod
+    def extract_delta(data):
+
+        d = np.absolute(data[:, 0] - data[:, 1])
+        return np.mean(d)
+
+    @staticmethod
+    def extract_change(data):
+
+        move = []
+        for firm in range(2):
+            move.append(np.mean([abs(data[i] - data[i + 1]) for i in range(len(data) - 1)]))
+
+        return np.mean(move)
+
+    def extract_single_dimension(self, variable, t_max):
+
+        print("Extracting variable '{}'.".format(variable.name))
+
+        if self.folders is None:
+            self.get_folders()
+
+        # noinspection PyUnusedLocal
+        data = [[] for i in range(t_max)]
+
+        for i in tqdm(self.stats.data["idx"]):
+
+            results = Results(economy_folder=self.folders[i])
+            for t in range(t_max):
+                data[t].append(
+                    results.data[variable.name][t]
+                )
+
+        print("Converting in array and computing mean/std.")
+
+        variable.data = dict()
+        variable.data["mean"] = np.array([np.mean(data[t]) for t in range(t_max)])
+        variable.data["std"] = np.array([np.std(data[t]) for t in range(t_max)])
+
+        print("Writing in pickle.")
+        variable.write()
+
+        print("Done.")
+
+    def get_folders(self):
+
+        self.folders = glob.glob("{}/HC_*".format(self.working_folder))
+        assert len(self.folders), "List of folders should not be empty!"
+
+
+class FigureMaker:
+
+    fig_folder = an_parameters["fig_folder"]
+
+    display = an_parameters["display"]
+
+    linear_regression = an_parameters["linear_regression"]
+
+    scatter_vars = an_parameters["scatter_vars"]
+    curve_vars = an_parameters["curve_vars"]
+
+    range_var = an_parameters["range_var"]
+
+    customer_firm_choices_period = an_parameters["customer_firm_choices_period"]
+    firm_period = an_parameters["firm_period"]
+
+    t_max = an_parameters["t_max"]
+
+    use_french = an_parameters["use_french"]
+
+    def __init__(self, stats_extractor):
+
+        self.stats = stats_extractor.stats
+        self.stats_extractor = stats_extractor
+
+    def run(self):
+
+        self.create_fig_folder()
 
         self.erase_stats_file()
 
@@ -257,7 +207,7 @@ class StatsExtractor(object):
             self.hexbin_plot(var1=var1, var2=var2)
             self.histbin(var1=var1, var2=var2)
             self.scatter_plot(
-                var1=var1, var2=var2, range_var=self.range_var, linear_regression=self.linear_regression)
+                var1=var1, var2=var2, range_var=self.range_var, linear_regression=self.linear_regression, force=True)
 
         for var in self.curve_vars:
             self.curve_plot(variable=var, t_max=self.t_max)
@@ -270,14 +220,18 @@ class StatsExtractor(object):
             pass
 
     # noinspection SpellCheckingInspection
-    def histbin(self, var1, var2):
+    def histbin(self, var1, var2, force=False):
+
+        fig_name = "{}/hist_median_{}_{}.pdf".format(self.fig_folder, var1, var2)
+        if path.exists(fig_name) and not force:
+            return
 
         if var1 == "customer_extra_view_choices" and var2 == "delta_position":
 
             x = np.asarray(self.stats.data[var1])
             y = np.asarray(self.stats.data[var2])
 
-            n_bin = 10
+            n_bin = 5
 
             a = np.linspace(0, 10, n_bin + 1)
 
@@ -303,7 +257,7 @@ class StatsExtractor(object):
 
             ax.bar(a[:-1] + (a[1] - a[0])/2, b, a[1] - a[0], color='grey')
 
-            plt.savefig("{}/hist_median_{}_{}.pdf".format(self.fig_folder, var1, var2))
+            plt.savefig(fig_name)
 
             # --- #
 
@@ -347,7 +301,11 @@ class StatsExtractor(object):
 
             plt.close()
 
-    def hexbin_plot(self, var1, var2):
+    def hexbin_plot(self, var1, var2, force=False):
+
+        fig_name = "{}/hexbin_{}_{}.pdf".format(self.fig_folder, var1, var2)
+        if path.exists(fig_name) and not force:
+            return
 
         if var1 == "customer_extra_view_choices" and var2 == "delta_position":
 
@@ -372,16 +330,24 @@ class StatsExtractor(object):
             cb = fig.colorbar(hb, ax=ax)
             cb.set_label('counts')
 
-            plt.savefig("{}/hexbin_{}_{}.pdf".format(self.fig_folder, var1, var2))
+            plt.savefig(fig_name)
 
             if self.display:
                 plt.show()
 
             plt.close()
 
-    def individual_plot(self):
+    def individual_plot(self, force=False):
+
+        sub_folder = "individual_plots"
+
+        if path.exists("{}/{}".format(self.fig_folder, sub_folder)) and not force:
+            return
 
         print("Doing individual plot.")
+
+        if self.stats_extractor.folders is None:
+            self.stats_extractor.get_folders()
 
         idx_to_plot = []
         example_type = []
@@ -398,18 +364,15 @@ class StatsExtractor(object):
         example_type.append("{}_differentiation".format("max"))
         idx_to_plot.append(idx_max)
 
-        if self.folders is None:
-            self.get_folders()
-
         for idx, ex_type in zip(idx_to_plot, example_type):
 
-            parameters = Parameters(economy_folder=self.folders[idx])
-            results = Results(economy_folder=self.folders[idx])
+            parameters = Parameters(economy_folder=self.stats_extractor.folders[idx])
+            results = Results(economy_folder=self.stats_extractor.folders[idx])
 
             fp = FigureProducer(
                 results=results.data,
                 parameters=parameters.data,
-                root_folder="{}/{}_idx{}".format(self.fig_folder, ex_type, idx)
+                root_folder="{}/{}/{}_idx{}".format(self.fig_folder, sub_folder, ex_type, idx)
             )
 
             fp.plot_customer_firm_choices(period=self.customer_firm_choices_period)
@@ -421,14 +384,18 @@ class StatsExtractor(object):
 
             fp.write_parameters()
 
-    def scatter_plot(self, var1, var2, range_var, linear_regression):
+    def scatter_plot(self, var1, var2, range_var, linear_regression, force=False):
+
+        fig_name = "{}/scatterplot_{}_{}.pdf".format(self.fig_folder, var1, var2)
+        if path.exists(fig_name) and not force:
+            return
 
         print("Doing scatter plot '{}' against '{}'.".format(var2, var1))
 
         x = np.asarray(self.stats.data[var1])
         y = np.asarray(self.stats.data[var2])
 
-        plt.scatter(x=x, y=y, color="black", s=10)
+        plt.scatter(x=x, y=y, c=self.stats.data["transportation_cost"], s=10, cmap=cm.plasma)
         plt.xlim(range_var[var1])
         plt.ylim(range_var[var2])
         plt.xlabel(self.format_label(var1))
@@ -450,25 +417,27 @@ class StatsExtractor(object):
 
                 f.write(to_write)
 
-        plt.savefig("{}/scatterplot_{}_{}.pdf".format(self.fig_folder, var1, var2))
+        plt.savefig(fig_name)
 
         if self.display:
             plt.show()
 
         plt.close()
 
-    def curve_plot(self, variable, t_max):
+    def curve_plot(self, variable, t_max, force=False):
+
+        fig_name = "{}/curve_plot_{}.pdf".format(self.fig_folder, variable)
+        if path.exists(fig_name) and not force:
+            return
 
         print("Doing curve plot for variable '{}'.".format(variable))
 
         var = Variable(name=variable)
 
         if var.data is None:
-            self.extract_single_dimension(var, t_max=t_max)
+            self.stats_extractor.extract_single_dimension(var, t_max=t_max)
 
         x = np.arange(t_max)
-
-        print(type(var.data))
 
         mean = var.data["mean"]
         std = var.data["std"]
@@ -479,91 +448,35 @@ class StatsExtractor(object):
         plt.fill_between(x, mean + std, mean - std, color='black', alpha=.1)
         plt.xlabel("t")
         plt.ylabel(self.format_label(variable))
-        plt.savefig("{}/curve_plot_{}.pdf".format(self.fig_folder, variable))
+        plt.savefig(fig_name)
 
         if self.display:
             plt.show()
 
         plt.close()
 
-    @staticmethod
-    def extract_delta(data):
+    def format_label(self, label):
 
-        d = np.absolute(data[:, 0] - data[:, 1])
-        return np.mean(d)
+        if self.use_french:
+            return an_parameters["french_mapping"][label]
 
-    @staticmethod
-    def extract_change(data):
-
-        move = []
-        for firm in range(2):
-            move.append(np.mean([abs(data[i] - data[i + 1]) for i in range(len(data) - 1)]))
-
-        return np.mean(move)
-
-    @staticmethod
-    def format_label(label):
-        french_mapping = {
-            "firm_temp": r"$\tau_f$",
-            "customer_temp": r"$\tau_c$",
-            "firm_alpha": r"$\alpha_f$",
-            "customer_alpha": r"$\alpha_c$",
-            "transportation_cost": "Coût de transport",
-            "delta_price": "Ecart de prix moyen entre les firmes",
-            "delta_position": "Distance moyenne entre les firmes",
-            "profits": "Profit moyen des firmes",
-            "customer_utility": "Utilité moyenne des consommateurs",
-            "customer_utility_consumption": "Utilité à consommer",
-            "customer_extra_view_choices": "Périmètre moyen d'exploration"
-        }
-        return french_mapping[label]
-        # return label.replace("_", " ").capitalize()
+        else:
+            return label.replace("_", " ").capitalize()
 
     def create_fig_folder(self):
 
         if not path.exists(self.fig_folder):
             makedirs(self.fig_folder)
 
-    def get_folders(self):
-
-        self.folders = glob.glob("{}/HC_*".format(self.working_folder))
-        assert len(self.folders), "List of folders should not be empty!"
-
-    def extract_single_dimension(self, variable, t_max):
-
-        print("Extracting variable '{}'.".format(variable.name))
-
-        if self.folders is None:
-            self.get_folders()
-
-        # noinspection PyUnusedLocal
-        data = [[] for i in range(t_max)]
-
-        for i in tqdm(self.stats.data["idx"]):
-
-            results = Results(economy_folder=self.folders[i])
-            for t in range(t_max):
-                data[t].append(
-                    results.data[variable.name][t]
-                )
-
-        print("Convert in array.")
-
-        variable.data = dict()
-        variable.data["mean"] = np.array([np.mean(data[t]) for t in range(t_max)])
-        variable.data["std"] = np.array([np.std(data[t]) for t in range(t_max)])
-
-        print("Write in pickle.")
-        variable.write()
-
-        print("Done.")
-
 
 def main():
 
     try:
         stats_extractor = StatsExtractor()
-        stats_extractor.run(n_select=10)
+        stats_extractor.run(n_select=None)
+
+        figure_maker = FigureMaker(stats_extractor=stats_extractor)
+        figure_maker.run()
 
     except Exception:
         raise Exception("Maybe there are errors coming from a bad configuration of the `analysis/parameters.py` file.")

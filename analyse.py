@@ -1,5 +1,5 @@
-# from analysis.analysis import main
-from analysis.analysis_partial_for_exp import main
+from analysis.analysis import main
+
 
 if __name__ == "__main__":
 
