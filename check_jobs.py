@@ -1,4 +1,4 @@
-from subprocess import getoutput, Popen
+from subprocess import getoutput
 from os import path
 from time import sleep
 import sys

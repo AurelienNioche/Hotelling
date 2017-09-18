@@ -105,8 +105,6 @@ class Elman:
 
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
-    import matplotlib
-    import matplotlib.pyplot as plt
 
     # Example 1: learning a simple time serie
     # -------------------------------------------------------------------------

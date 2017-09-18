@@ -1,5 +1,4 @@
 import numpy as np
-from tqdm import tqdm
 
 from firm.firm import Firm
 from customer.customer import Customer
