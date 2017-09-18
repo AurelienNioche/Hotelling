@@ -26,7 +26,7 @@ class StatsExtractor(object):
 
         self.folders = None
 
-    def run(self, use_pickle_file=True, n_select=None):
+    def run(self, use_pickle_file=True, n_select=None, extrema_only=None):
 
         t = time()
 
@@ -36,7 +36,7 @@ class StatsExtractor(object):
             print("Stats data loaded from pickle file in {} s.".format(time() - t))
 
         if n_select is not None:
-            self.make_a_selection(n_select=n_select)
+            self.make_a_selection(n_select=n_select, extrema_only=extrema_only)
 
     def extract_data(self):
 
@@ -101,15 +101,22 @@ class StatsExtractor(object):
 
         print("Analysis will be done with {} economies.".format(len(self.stats.data["idx"])))
 
-    def make_a_selection(self, n_select):
+    def make_a_selection(self, n_select, extrema_only):
 
         n_eco = len(self.stats.data["idx"])
 
         for key in self.stats.data.keys():
             self.stats.data[key] = np.asarray(self.stats.data[key])
 
+        all_str_cost = sorted(np.unique(self.stats.data["transportation_cost"]))
+
+        if extrema_only:
+            tr_cost_selected = [all_str_cost[0], all_str_cost[-1]]
+        else:
+            tr_cost_selected = all_str_cost
+
         idx_selected = []
-        for tr_cost in np.unique(self.stats.data["transportation_cost"]):
+        for tr_cost in tr_cost_selected:
             idx_selected += \
                 list(np.random.choice(np.arange(n_eco)[self.stats.data["transportation_cost"] == tr_cost],
                                       size=n_select, replace=False))
@@ -473,7 +480,8 @@ def main():
 
     try:
         stats_extractor = StatsExtractor()
-        stats_extractor.run(n_select=None)
+        # stats_extractor.run()
+        stats_extractor.run(n_select=100, extrema_only=True)
 
         figure_maker = FigureMaker(stats_extractor=stats_extractor)
         figure_maker.run()

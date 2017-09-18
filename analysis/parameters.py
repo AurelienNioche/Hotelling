@@ -4,7 +4,7 @@ from os import path
 an_parameters = {
     "working_folder": path.expanduser("~/Desktop/HotellingExperimental/data"),
     "pickle_folder": path.expanduser("~/Desktop/HotellingExperimental/data_pickle"),
-    "fig_folder": path.expanduser("~/Desktop/HotellingExperimental/figures"),
+    "fig_folder": path.expanduser("~/Desktop/HotellingExperimental/figures_partial"),
 
     "t_max": 5000,
     "time_window": 100,
@@ -17,12 +17,12 @@ an_parameters = {
     "use_french": True,
 
     "scatter_vars": [
-        # ("firm_temp", "delta_position"),
-        # ("firm_alpha", "delta_position"),
+        ("firm_temp", "delta_position"),
+        ("firm_alpha", "delta_position"),
         # ("firm_temp", "delta_price"),
         # ("firm_alpha", "delta_price"),
-        # ("customer_temp", "delta_position"),
-        # ("customer_alpha", "delta_position"),
+        ("customer_temp", "delta_position"),
+        ("customer_alpha", "delta_position"),
         # ("customer_temp", "delta_price"),
         ("customer_extra_view_choices", "delta_position"),
         # ("customer_alpha", "delta_price"),
@@ -32,7 +32,7 @@ an_parameters = {
         # ("utility_consumption", "delta_position"),
         # ("utility_consumption", "customer_extra_view_choices"),
         ("transportation_cost", "customer_extra_view_choices"),
-        # ("transportation_cost", "delta_position"),
+        ("transportation_cost", "delta_position"),
         # ("transportation_cost", "delta_price"),
         # ("transportation_cost", "profits"),
         # ("transportation_cost", "customer_utility"),
@@ -49,7 +49,7 @@ an_parameters = {
         "customer_temp": (0.0095, 0.0305),
         "firm_alpha": (0.009, 0.101),
         "customer_alpha": (0.009, 0.101),
-        "transportation_cost": (-0.01, 1.51),
+        "transportation_cost": (-0.01, 2.01),
         "delta_price": (-0.1, 8.1),
         "delta_position": (-0.1, 8.1),
         "profits": (9, 62.1),
