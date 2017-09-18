@@ -2,10 +2,13 @@ from subprocess import getoutput
 from os import path
 from time import sleep
 import sys
+import datetime
 
 
-def main(server_folder="aurelien/Hotelling",
-         local_folder=path.expanduser("~/Desktop")):
+def main(server_folder="aurelien/Hotelling/data",
+         local_folder=path.expanduser(
+             "~/Desktop/dataAvakas{}".format(str(datetime.datetime.now()).replace(' ', '_').replace('.', '_', )
+))):
 
     cmd = """expect -c 'spawn avakas
              expect "~]$"
