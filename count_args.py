@@ -16,7 +16,7 @@ def get_param():
 def main():
 
     n_args = len(get_param())
-    print("N jobs:", n_args)
+    print(n_args)
     return n_args
 
 
