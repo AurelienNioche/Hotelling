@@ -6,7 +6,7 @@ from cluster.parameters import cl_parameters
 
 def prepare():
 
-    n_positions = 11
+    n_positions = 21
     n_prices = 11
 
     n_firms = 2
@@ -27,7 +27,7 @@ def prepare():
     range_customer_alpha = [0.01, 0.10]
     range_customer_temp = [0.01, 0.03]
 
-    transportation_cost = 2
+    range_transportation_cost = [0.1, 0.5, 1, 1.5, 2]
     utility_consumption = 21  # [n_prices+1, (n_prices*2) + 1]
 
     parameters_list = []
@@ -45,9 +45,9 @@ def prepare():
             "n_positions": n_positions,
             "n_prices": n_prices,
 
-            "transportation_cost": transportation_cost,
             "utility_consumption": utility_consumption,
 
+            "range_transportation_cost": range_transportation_cost,
             "range_firm_temp": range_firm_temp,
             "range_firm_alpha": range_firm_alpha,
 

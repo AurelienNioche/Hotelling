@@ -4,7 +4,7 @@ from os import path
 an_parameters = {
     "working_folder": path.expanduser("~/Desktop/HotellingExperimental/data"),
     "pickle_folder": path.expanduser("~/Desktop/HotellingExperimental/data_pickle"),
-    "fig_folder": path.expanduser("~/Desktop/HotellingExperimental/figures_partial"),
+    "fig_folder": path.expanduser("~/Desktop/HotellingExperimental/figures_partial_75"),
 
     "t_max": 5000,
     "time_window": 100,

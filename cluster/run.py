@@ -11,13 +11,14 @@ def run(args):
 
     param, clone_id = args[0],  args[1]
 
+    param["transportation_cost"] = np.random.choice(param["range_transportation_cost"])
+
     param["customer_alpha"] = np.random.uniform(*param["range_customer_alpha"])
     param["customer_temp"] = np.random.uniform(*param["range_customer_temp"])
 
     param["firm_alpha"] = np.random.uniform(*param["range_firm_alpha"])
     param["firm_temp"] = np.random.uniform(*param["range_firm_temp"])
 
-    # param["transportation_cost"] = np.random.uniform(*param["range_transportation_cost"])
     # param["utility_consumption"] = np.random.uniform(*param["range_utility_consumption"])
 
     param["firm_positions"] = np.random.randint(1, param["n_positions"] + 1, size=param["n_firms"])
