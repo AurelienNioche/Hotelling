@@ -20,6 +20,10 @@ def prepare():
     t_max = 5000
 
     firm = "StrategicNeuralNetwork"
+
+    # Customer classes: 
+    # "CustomerNN" using an ANN 
+    # "CustomerSimple" with fixed exploration perimeter and deterministic firm choice
     customer = "CustomerSimple"
 
     range_firm_alpha = [0.01, 0.10]
@@ -29,7 +33,7 @@ def prepare():
 
     range_transportation_cost = [0.1, 0.5, 1, 1.5, 2]
     utility_consumption = 21  # [n_prices+1, (n_prices*2) + 1]
-    range_customer_extra_view = [n for n in range(n_prices)]
+    range_customer_extra_view = list(range(n_prices))
 
     parameters_list = []
 
