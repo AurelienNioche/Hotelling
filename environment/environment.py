@@ -1,7 +1,7 @@
 import numpy as np
 
 from firm.firm import Firm
-from customer.customer import Customer
+from customer.customer import CustomerSimple, CustomerNN
 from firm.nn_firms import StrategicNeuralNetwork, NonStrategicNeuralNetwork
 from neural_network.elman import Elman
 from neural_network.perceptron import MLP
@@ -74,7 +74,8 @@ class Environment(object):
 
                     alpha=self.param["customer_alpha"],
                     temp=self.param["customer_temp"],
-                    momentum=self.param["customer_momentum"]
+                    momentum=self.param["customer_momentum"],
+                    extra_view=self.param["customer_extra_view"]
                 )
             )
 

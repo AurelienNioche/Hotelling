@@ -4,7 +4,45 @@ from utils.utils import softmax, normalize
 from neural_network.perceptron import MLP
 
 
-class Customer(object):
+class CustomerSimple:
+
+    def __init__(self, **kwargs):
+
+        self.x = kwargs["x"]
+        self.t_cost = kwargs["t_cost"]
+        self.u_consumption = kwargs["utility_consumption"]
+
+        self.n_positions = kwargs["n_positions"]
+        self.n_prices = kwargs["n_prices"]
+
+        self.extra_view = kwargs["extra_view"]
+
+        self.firm_choice = None
+        self.utility = None
+    
+    def get_field_of_view(self):
+        return [self.x - (self.extra_view // 2), self.x + (self.extra_view // 2)]
+
+    def get_firm_choice(self, firms_idx, prices):
+        """choice function"""
+
+        consume = len(prices) > 0
+
+        if consume:
+            price = min(prices)  # Choose minimum price
+            self.firm_choice = np.random.choice(firms_idx[prices == price])
+
+        else:
+            price = 0
+            self.firm_choice = -1
+
+        exploration_cost = self.t_cost * self.extra_view
+        self.utility = int(consume) * self.u_consumption - (exploration_cost + price)
+
+        return self.firm_choice
+
+
+class CustomerNN(object):
 
     def __init__(self, **kwargs):
 

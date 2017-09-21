@@ -20,7 +20,7 @@ def prepare():
     t_max = 5000
 
     firm = "StrategicNeuralNetwork"
-    customer = "Customer"
+    customer = "CustomerSimple"
 
     range_firm_alpha = [0.01, 0.10]
     range_firm_temp = [0.01, 0.03]
@@ -29,6 +29,7 @@ def prepare():
 
     range_transportation_cost = [0.1, 0.5, 1, 1.5, 2]
     utility_consumption = 21  # [n_prices+1, (n_prices*2) + 1]
+    range_customer_extra_view = [n for n in range(n_prices)]
 
     parameters_list = []
 
@@ -53,6 +54,7 @@ def prepare():
 
             "range_customer_alpha": range_customer_alpha,
             "range_customer_temp": range_customer_temp,
+            "range_customer_extra_view": range_customer_extra_view,
 
             "firm_momentum": firm_momentum,
             "firm_neural_network": firm_neural_network,  # Useful for NN

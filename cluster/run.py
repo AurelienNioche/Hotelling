@@ -12,6 +12,7 @@ def run(args):
     param, clone_id = args[0],  args[1]
 
     param["transportation_cost"] = np.random.choice(param["range_transportation_cost"])
+    param["customer_extra_view"] = np.random.choice(param["range_customer_extra_view"])
 
     param["customer_alpha"] = np.random.uniform(*param["range_customer_alpha"])
     param["customer_temp"] = np.random.uniform(*param["range_customer_temp"])
