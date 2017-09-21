@@ -21,7 +21,7 @@ def main(server_folder="aurelien/Hotelling/data",
     keywords = ["master", "ubx2"]
 
     # nb of second before refreshing
-    refresh = 60
+    refresh = 300
 
     # waiting for jobs to end
     while True:

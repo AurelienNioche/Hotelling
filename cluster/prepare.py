@@ -6,7 +6,7 @@ from cluster.parameters import cl_parameters
 
 def prepare():
 
-    n_positions = 21
+    n_positions = 17
     n_prices = 11
 
     n_firms = 2

@@ -2,9 +2,9 @@ from os import path
 
 
 an_parameters = {
-    "working_folder": path.expanduser("~/Desktop/HotellingExperimental/data"),
-    "pickle_folder": path.expanduser("~/Desktop/HotellingExperimental/data_pickle"),
-    "fig_folder": path.expanduser("~/Desktop/HotellingExperimental/figures_partial_75"),
+    "working_folder": path.expanduser("~/Desktop/HotellingExtended/data"),
+    "pickle_folder": path.expanduser("~/Desktop/HotellingExtended/data_pickle"),
+    "fig_folder": path.expanduser("~/Desktop/HotellingExtended/figures"),
 
     "t_max": 5000,
     "time_window": 100,
@@ -51,11 +51,11 @@ an_parameters = {
         "customer_alpha": (0.009, 0.101),
         "transportation_cost": (-0.01, 2.01),
         "delta_price": (-0.1, 8.1),
-        "delta_position": (-0.1, 8.1),
-        "profits": (9, 62.1),
+        "delta_position": (-0.1, 20.1),
+        "profits": (9, 120.1),
         "customer_utility": (-0.1, 20.1),
         "utility_consumption": (11.9, 23.1),
-        "customer_extra_view_choices": (-0.1, 10.1)
+        "customer_extra_view_choices": (-0.1, 20.1)
     },
 
     "french_mapping": {
