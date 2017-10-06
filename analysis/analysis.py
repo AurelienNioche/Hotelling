@@ -64,6 +64,7 @@ class StatsExtractor(object):
                 "customer_utility", "customer_utility_consumption", "idx"]:
             self.stats.data[label] = []
 
+
         for i, folder in tqdm(enumerate(self.folders)):
 
             parameters = Parameters(economy_folder=folder)
@@ -113,6 +114,13 @@ class StatsExtractor(object):
                 self.stats.data["change_price"].append(
                     self.extract_change(results.data["prices"][-self.time_window:])
                 )
+
+                if all([self.stats.data["customer_extra_view_choices"][0] == i for i in
+                    self.stats.data["customer_extra_view_choices"]]):
+                    print("ALL MEANS ARE EQUALS")
+                    quit()
+
+                print(self.stats.data["customer_extra_view_choices"])
 
                 self.stats.data["idx"].append(i)
 
@@ -332,7 +340,8 @@ class StatsExtractor(object):
 
         var = Variable(name=variable)
 
-        self.extract_single_dimension(var, t_max=t_max)
+        if var.data is None:
+            self.extract_single_dimension(var, t_max=t_max)
 
         x = np.arange(t_max)
 
@@ -417,7 +426,6 @@ class StatsExtractor(object):
 
         variable.data = dict()
         variable.data["mean"] = np.array([np.mean(data[t]) for t in range(t_max)])
-        
         variable.data["std"] = np.array([np.std(data[t]) for t in range(t_max)])
 
         print("Write in pickle.")

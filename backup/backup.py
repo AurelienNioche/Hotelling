@@ -1,5 +1,6 @@
 import pickle
 from os import path, makedirs
+from copy import deepcopy
 
 
 from utils.utils import timestamp
@@ -11,7 +12,7 @@ class Backup(object):
 
     def __init__(self, data, name="data", root_folder=path.expanduser("~/Desktop"), label=""):
 
-        self.data = data
+        self.data = deepcopy(data)
         self.folder = "{}/HC_{}_{}".format(root_folder, label, self.time_stamp)
         self.file_name = "{}/HC_{}_{}_{}.p".format(self.folder, name, label, self.time_stamp)
 
