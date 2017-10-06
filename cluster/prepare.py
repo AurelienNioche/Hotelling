@@ -33,7 +33,7 @@ def prepare():
 
     range_transportation_cost = [0.1, 0.5, 1, 1.5, 2]
     utility_consumption = 21  # [n_prices+1, (n_prices*2) + 1]
-    range_customer_extra_view = list(range(n_prices))
+    range_customer_extra_view = [10, 8, 6, 4, 2]
 
     parameters_list = []
 

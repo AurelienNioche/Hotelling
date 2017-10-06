@@ -10,9 +10,12 @@ from backup.backup import Backup
 def run(args):
 
     param, clone_id = args[0],  args[1]
+    
+    idx =  np.random.choice(len(param["range_transportation_cost"])) 
 
-    param["transportation_cost"] = np.random.choice(param["range_transportation_cost"])
-    param["customer_extra_view"] = np.random.choice(param["range_customer_extra_view"])
+    param["transportation_cost"] = param["range_transportation_cost"][idx]
+
+    param["customer_extra_view"] = param["range_customer_extra_view"][idx]
 
     param["customer_alpha"] = np.random.uniform(*param["range_customer_alpha"])
     param["customer_temp"] = np.random.uniform(*param["range_customer_temp"])

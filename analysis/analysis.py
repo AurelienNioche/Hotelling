@@ -332,8 +332,7 @@ class StatsExtractor(object):
 
         var = Variable(name=variable)
 
-        if var.data is None:
-            self.extract_single_dimension(var, t_max=t_max)
+        self.extract_single_dimension(var, t_max=t_max)
 
         x = np.arange(t_max)
 
@@ -418,6 +417,7 @@ class StatsExtractor(object):
 
         variable.data = dict()
         variable.data["mean"] = np.array([np.mean(data[t]) for t in range(t_max)])
+        
         variable.data["std"] = np.array([np.std(data[t]) for t in range(t_max)])
 
         print("Write in pickle.")
