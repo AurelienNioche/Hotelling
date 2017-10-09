@@ -17,7 +17,7 @@ def prepare():
     customer_momentum = 0.0  # Only NN
     customer_neural_network = "MLP"  # Only NN
 
-    t_max = 3
+    t_max = 1000 
 
     firm = "StrategicNeuralNetwork"
 
@@ -37,10 +37,10 @@ def prepare():
 
     parameters_list = []
 
-    for i in range(cl_parameters["n_jobs"]):
+    for i in range(cl_parameters["n_machines"]):
 
         param = {
-            "job_id": i,
+            "machine_id": i,
 
             "n_firms": n_firms,
 
@@ -66,7 +66,8 @@ def prepare():
             "customer_momentum": customer_momentum,
             "customer_neural_network": customer_neural_network,
 
-            "t_max": t_max
+            "t_max": t_max,
+
         }
 
         i += 1

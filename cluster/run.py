@@ -9,9 +9,16 @@ from backup.backup import Backup
 
 def run(args):
 
-    param, clone_id = args[0],  args[1]
-    
-    idx =  np.random.choice(len(param["range_transportation_cost"])) 
+    param, job_id = args[0], args[1]
+
+    np.random.seed()
+
+    #  In order to reuse the state -> np.random.set_state(state)
+    np_random_generator_state = np.random.get_state()
+
+    param["np_random_generator_state"] = np_random_generator_state
+
+    idx = np.random.choice(len(param["range_transportation_cost"])) 
 
     param["transportation_cost"] = param["range_transportation_cost"][idx]
 
@@ -28,11 +35,9 @@ def run(args):
     param["firm_positions"] = np.random.randint(1, param["n_positions"] + 1, size=param["n_firms"])
     param["firm_prices"] = np.random.randint(1, param["n_prices"] + 1, size=param["n_firms"])
 
-    param["seed"] = np.random.randint(2 ** 32)
+    machine_id = param["machine_id"]
 
-    job_id = param["job_id"]
-
-    label = "J{}C{}".format(job_id, clone_id)
+    label = "M{}J{}".format(machine_id, job_id)
 
     env = Environment(**param)
     results = env.run()
@@ -56,7 +61,7 @@ def main(str_idx):
     param = get_param(int(str_idx))
 
     n_cpu = cl_parameters["n_cpu"]
-    n_clones = cl_parameters["n_clones"]
+    n_jobs = cl_parameters["n_jobs"]
 
     pool = Pool(processes=n_cpu)
-    pool.map(func=run, iterable=[[param, i] for i in range(n_clones)])
+    pool.map(func=run, iterable=[[param, i] for i in range(n_jobs)])

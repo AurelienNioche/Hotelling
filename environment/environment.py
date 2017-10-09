@@ -162,8 +162,6 @@ class Environment(object):
 
     def run(self):
 
-        np.random.seed(self.param["seed"])
-
         # Set the environment
         self.set_up()
 

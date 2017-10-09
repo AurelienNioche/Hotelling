@@ -2,7 +2,7 @@ from os import path
 
 
 an_parameters = {
-    "working_folder": path.expanduser("~/python/HotellingAurelien/data/"),
+    "working_folder": path.expanduser("~/python/Hotelling/data/"),
     "pickle_folder": path.expanduser("~/Desktop/HotellingSimple/data_pickle/"),
     "fig_folder": path.expanduser("~/Desktop/HotellingSimple/figures_partial_simple/"),
 

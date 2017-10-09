@@ -4,6 +4,7 @@ from tqdm import tqdm
 from os import path, makedirs
 from time import time
 from scipy.stats import linregress
+from matplotlib import cm
 
 from graph.graph import FigureProducer
 from analysis.parameters import an_parameters
@@ -64,7 +65,6 @@ class StatsExtractor(object):
                 "customer_utility", "customer_utility_consumption", "idx"]:
             self.stats.data[label] = []
 
-
         for i, folder in tqdm(enumerate(self.folders)):
 
             parameters = Parameters(economy_folder=folder)
@@ -115,13 +115,6 @@ class StatsExtractor(object):
                     self.extract_change(results.data["prices"][-self.time_window:])
                 )
 
-                if all([self.stats.data["customer_extra_view_choices"][0] == i for i in
-                    self.stats.data["customer_extra_view_choices"]]):
-                    print("ALL MEANS ARE EQUALS")
-                    quit()
-
-                print(self.stats.data["customer_extra_view_choices"])
-
                 self.stats.data["idx"].append(i)
 
         self.stats.write()
@@ -164,7 +157,7 @@ class StatsExtractor(object):
             for i in range(n_bin):
                 yo = list()
                 for idx, xi in enumerate(x):
-                    if a[i] <= xi < a[i+1]:
+                    if a[i] <= xi < a[i + 1]:
                         yo.append(y[idx])
 
                 b[i] = np.median(yo) if len(yo) else 0
@@ -180,7 +173,7 @@ class StatsExtractor(object):
             plt.xlabel(self.format_label(var1))
             plt.ylabel(self.format_label(var2))
 
-            ax.bar(a[:-1] + (a[1] - a[0])/2, b, a[1] - a[0], color='grey')
+            ax.bar(a[:-1] + (a[1] - a[0]) / 2, b, a[1] - a[0], color='grey')
 
             plt.savefig("{}/hist_median_{}_{}.pdf".format(self.fig_folder, var1, var2))
 
@@ -198,7 +191,7 @@ class StatsExtractor(object):
             for i in range(n_bin):
                 yo = list()
                 for idx, xi in enumerate(x):
-                    if a[i] <= xi < a[i+1]:
+                    if a[i] <= xi < a[i + 1]:
                         yo.append(y[idx])
 
                 b[i] = np.mean(yo) if len(yo) else 0
@@ -215,7 +208,7 @@ class StatsExtractor(object):
             plt.xlabel(self.format_label(var1))
             plt.ylabel(self.format_label(var2))
 
-            ax.bar(a[:-1] + (a[1] - a[0])/2, b, a[1] - a[0], color='grey', yerr=c)
+            ax.bar(a[:-1] + (a[1] - a[0]) / 2, b, a[1] - a[0], color='grey', yerr=c)
 
             plt.savefig("{}/hist_mean_{}_{}.pdf".format(self.fig_folder, var1, var2))
 
@@ -305,7 +298,7 @@ class StatsExtractor(object):
         x = np.asarray(self.stats.data[var1])
         y = np.asarray(self.stats.data[var2])
 
-        plt.scatter(x=x, y=y, color="black", s=10)
+        plt.scatter(x=x, y=y, c=self.stats.data["transportation_cost"], cmap=cm.plasma, s=10)
         plt.xlim(range_var[var1])
         plt.ylim(range_var[var2])
         plt.xlabel(self.format_label(var1))
