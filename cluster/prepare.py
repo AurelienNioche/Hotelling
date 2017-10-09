@@ -17,7 +17,7 @@ def prepare():
     customer_momentum = 0.0  # Only NN
     customer_neural_network = "MLP"  # Only NN
 
-    t_max = 1000 
+    t_max = 1500
 
     firm = "StrategicNeuralNetwork"
 
