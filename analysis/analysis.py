@@ -15,9 +15,13 @@ class StatsExtractor(object):
 
     t_max = an_parameters["t_max"]
     time_window = an_parameters["time_window"]
+    n_positions = an_parameters["n_positions"]
 
     working_folder = an_parameters["working_folder"]
     fig_folder = an_parameters["fig_folder"]
+
+    high_t_cost_condition = an_parameters["high_t_cost_condition"]
+    low_t_cost_condition = an_parameters["low_t_cost_condition"]
 
     display = an_parameters["display"]
 
@@ -62,14 +66,18 @@ class StatsExtractor(object):
                 "transportation_cost", "delta_position", "delta_price",
                 "profits", "change_position", "change_price", "customer_extra_view_choices",
                 "firm_temp", "firm_alpha", "customer_temp", "customer_alpha",
-                "customer_utility", "customer_utility_consumption", "idx"]:
-            self.stats.data[label] = []
+                "customer_utility", "customer_utility_consumption", "idx",]:
+                self.stats.data[label] = []
+
+        for label in ["mean_position_extra_view_high", "mean_position_extra_view_low",
+                "std_position_extra_view_high", "std_position_extra_view_low",]:
+                self.stats.data[label] = [[] for i in range(self.n_positions)]
 
         for i, folder in tqdm(enumerate(self.folders)):
 
             parameters = Parameters(economy_folder=folder)
             results = Results(economy_folder=folder)
-
+            
             if parameters.data is not None and results.data is not None and \
                     results.is_valid(time_window=self.time_window):
                 self.stats.data["customer_utility_consumption"].append(
@@ -115,12 +123,39 @@ class StatsExtractor(object):
                     self.extract_change(results.data["prices"][-self.time_window:])
                 )
 
+                # ------------ Hist low / high transportation cost for each pos ------- # 
+
+                if parameters.data["transportation_cost"] >= self.high_t_cost_condition:
+
+                    means, stds = self.get_extra_view_mean_std_for_each_positions(
+                            results.data["customer_extra_view_choices"][-self.time_window:]
+                    )
+
+                    for i, mean in enumerate(means):
+                        self.stats.data["mean_position_extra_view_high"][i].append(mean)
+
+                    for i, std in enumerate(stds):
+                        self.stats.data["std_position_extra_view_high"][i].append(std)
+
+                elif parameters.data["transportation_cost"] <= self.low_t_cost_condition:
+
+                    means, stds = self.get_extra_view_mean_std_for_each_positions(
+                            results.data["customer_extra_view_choices"][-self.time_window:]
+                    )
+                    
+                    for i, mean in enumerate(means):
+                        self.stats.data["mean_position_extra_view_low"][i].append(mean)
+
+                    for i, std in enumerate(stds):
+                        self.stats.data["std_position_extra_view_low"][i].append(std)
+
                 self.stats.data["idx"].append(i)
+                
 
         self.stats.write()
 
         print("Done.")
-
+    
     def do_plots(self):
 
         self.erase_stats_file()
@@ -135,7 +170,48 @@ class StatsExtractor(object):
         for var in self.curve_vars:
             self.curve_plot(variable=var, t_max=self.t_max)
 
-        self.individual_plot()
+        # self.individual_plot()
+        self.extra_view_for_each_position_and_condition()
+
+    def extra_view_for_each_position_and_condition(self):
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+
+        low_mean = [np.mean(position) for position in self.stats.data["mean_position_extra_view_low"]]
+        low_std = [np.mean(position) for position in self.stats.data["std_position_extra_view_low"]]
+        high_mean = [np.mean(position) for position in self.stats.data["mean_position_extra_view_high"]]
+        high_std = [np.mean(position) for position in self.stats.data["std_position_extra_view_high"]]
+
+        ## necessary variables
+        n = len(low_mean)
+        ind = np.arange(n)                # the x locations for the groups
+        width = 0.35                      # the width of the bars
+
+        ## the bars
+        rects1 = ax.bar(ind, low_mean, width,
+                        color='black',
+                        yerr=low_std,
+                        error_kw=dict(elinewidth=2,ecolor='red'))
+
+        rects2 = ax.bar(ind + width, high_mean, width,
+                            color='red',
+                            yerr=high_std,
+                            error_kw=dict(elinewidth=2,ecolor='black'))
+
+        # axes and labels
+        ax.set_xlim(-width, len(ind) + width)
+        ax.set_ylim(0, 25)
+        ax.set_ylabel('extra_view')
+        xTickMarks = ['Position' + str(i) for i in range(n)]
+        ax.set_xticks(ind + width)
+        xtickNames = ax.set_xticklabels(xTickMarks)
+        plt.setp(xtickNames, rotation=45, fontsize=10)
+
+        ## add a legend
+        ax.legend( (rects1[0], rects2[0]), ('Low', 'High') )
+
+        plt.savefig("{}/hist_median_{}_{}.pdf".format(self.fig_folder, "position", "extra_view"))
 
     def erase_stats_file(self):
 
@@ -217,7 +293,8 @@ class StatsExtractor(object):
             if self.display:
                 plt.show()
 
-            plt.close()
+
+                plt.close()
 
     def hexbin_plot(self, var1, var2):
 
@@ -354,6 +431,7 @@ class StatsExtractor(object):
 
         plt.close()
 
+
     @staticmethod
     def extract_delta(data):
 
@@ -425,6 +503,17 @@ class StatsExtractor(object):
         variable.write()
 
         print("Done.")
+
+    @staticmethod
+    def get_extra_view_mean_std_for_each_positions(data):
+        
+        data = np.asarray(data)
+        n_positions = range(len(data[0]))
+
+        mean_position_extra_view = [np.mean(data[:, col]) for col in n_positions]
+        std_position_extra_view = [np.std(data[:, col]) for col in n_positions]
+
+        return mean_position_extra_view, std_position_extra_view
 
 
 def main():

@@ -2,14 +2,18 @@ from os import path
 
 
 an_parameters = {
-    "working_folder": path.expanduser("~/python/Hotelling/data/"),
-    "pickle_folder": path.expanduser("~/Desktop/HotellingSimple/data_pickle/"),
-    "fig_folder": path.expanduser("~/Desktop/HotellingSimple/figures_partial_simple/"),
+    "working_folder": path.expanduser("~/Desktop/HotellingExtended21/HotellingExtended21/data/"),
+    "pickle_folder": path.expanduser("~/Desktop/HotellingExtended21/data_pickle/"),
+    "fig_folder": path.expanduser("~/Desktop/HotellingExtended21/figures_simple/"),
 
-    "t_max": 5000,
+    "n_positions": 21,
+    "t_max": 1500,
     "time_window": 100,
     "customer_firm_choices_period": 25,
     "firm_period": 5000,
+
+    "high_t_cost_condition": 2,
+    "low_t_cost_condition": 0.1,
 
     "display": False,
     "linear_regression": True,
@@ -51,11 +55,11 @@ an_parameters = {
         "customer_alpha": (0.009, 0.101),
         "transportation_cost": (-0.01, 2.01),
         "delta_price": (-0.1, 8.1),
-        "delta_position": (-0.1, 8.1),
+        "delta_position": (-0.1, 20.1),
         "profits": (9, 62.1),
         "customer_utility": (-0.1, 20.1),
         "utility_consumption": (11.9, 23.1),
-        "customer_extra_view_choices": (-0.1, 10.1)
+        "customer_extra_view_choices": (-0.1, 15.1)
     },
 
     "french_mapping": {

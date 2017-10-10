@@ -31,9 +31,10 @@ def prepare():
     range_customer_alpha = [0.01, 0.10]
     range_customer_temp = [0.01, 0.03]
 
-    range_transportation_cost = [0.1, 0.5, 1, 1.5, 2]
+    range_transportation_cost = [0.1, 2]
     utility_consumption = 21  # [n_prices+1, (n_prices*2) + 1]
-    range_customer_extra_view = [10, 8, 6, 4, 2]
+    range_customer_extra_view = {0: {"v_max": 15, "mean": 12, "v_min": 9}, 
+                                 1: {"v_max": 5, "mean": 2, "v_min": 1}}
 
     parameters_list = []
 
