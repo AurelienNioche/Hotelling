@@ -123,34 +123,29 @@ class StatsExtractor(object):
                     self.extract_change(results.data["prices"][-self.time_window:])
                 )
 
+                self.stats.data["idx"].append(i)
+
                 # ------------ Hist low / high transportation cost for each pos ------- # 
 
                 if parameters.data["transportation_cost"] >= self.high_t_cost_condition:
 
-                    means, stds = self.get_extra_view_mean_std_for_each_positions(
-                            results.data["customer_extra_view_choices"][-self.time_window:]
+                    means_and_stds = self.get_extra_view_mean_std_for_each_positions(
+                        data=results.data["customer_extra_view_choices"][-self.time_window:]
                     )
 
-                    for i, mean in enumerate(means):
-                        self.stats.data["mean_position_extra_view_high"][i].append(mean)
-
-                    for i, std in enumerate(stds):
-                        self.stats.data["std_position_extra_view_high"][i].append(std)
+                    for position, (mean, std) in enumerate(means_and_stds):
+                        self.stats.data["mean_position_extra_view_high"][position].append(mean)
+                        self.stats.data["std_position_extra_view_high"][position].append(std)
 
                 elif parameters.data["transportation_cost"] <= self.low_t_cost_condition:
 
-                    means, stds = self.get_extra_view_mean_std_for_each_positions(
+                    means_and_stds = self.get_extra_view_mean_std_for_each_positions(
                             results.data["customer_extra_view_choices"][-self.time_window:]
                     )
                     
-                    for i, mean in enumerate(means):
-                        self.stats.data["mean_position_extra_view_low"][i].append(mean)
-
-                    for i, std in enumerate(stds):
-                        self.stats.data["std_position_extra_view_low"][i].append(std)
-
-                self.stats.data["idx"].append(i)
-                
+                    for position, (mean, std) in enumerate(means_and_stds):
+                        self.stats.data["mean_position_extra_view_low"][position].append(mean)
+                        self.stats.data["std_position_extra_view_low"][position].append(std)
 
         self.stats.write()
 
@@ -171,9 +166,11 @@ class StatsExtractor(object):
             self.curve_plot(variable=var, t_max=self.t_max)
 
         # self.individual_plot()
-        self.extra_view_for_each_position_and_condition()
+        self.hist_extra_view_for_each_position_and_condition()
 
-    def extra_view_for_each_position_and_condition(self):
+    def hist_extra_view_for_each_position_and_condition(self):
+        
+        print("Doing hist extra view mean and std for each position.")
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
@@ -182,36 +179,34 @@ class StatsExtractor(object):
         low_std = [np.mean(position) for position in self.stats.data["std_position_extra_view_low"]]
         high_mean = [np.mean(position) for position in self.stats.data["mean_position_extra_view_high"]]
         high_std = [np.mean(position) for position in self.stats.data["std_position_extra_view_high"]]
+                
+        n = self.n_positions
+        ind = np.arange(n)  # the x locations for the groups
+        width = 0.35        # the width of the bars
 
-        ## necessary variables
-        n = len(low_mean)
-        ind = np.arange(n)                # the x locations for the groups
-        width = 0.35                      # the width of the bars
-
-        ## the bars
         rects1 = ax.bar(ind, low_mean, width,
                         color='black',
                         yerr=low_std,
-                        error_kw=dict(elinewidth=2,ecolor='red'))
+                        error_kw=dict(elinewidth=2, ecolor='red'))
 
         rects2 = ax.bar(ind + width, high_mean, width,
                             color='red',
                             yerr=high_std,
-                            error_kw=dict(elinewidth=2,ecolor='black'))
+                            error_kw=dict(elinewidth=2, ecolor='black'))
 
         # axes and labels
         ax.set_xlim(-width, len(ind) + width)
         ax.set_ylim(0, 25)
         ax.set_ylabel('extra_view')
-        xTickMarks = ['Position' + str(i) for i in range(n)]
+        x_tick_marks = ['Position' + str(i) for i in range(n)]
         ax.set_xticks(ind + width)
-        xtickNames = ax.set_xticklabels(xTickMarks)
-        plt.setp(xtickNames, rotation=45, fontsize=10)
+        x_tick_names = ax.set_xticklabels(x_tick_marks)
+        plt.setp(x_tick_names, rotation=45, fontsize=10)
 
         ## add a legend
-        ax.legend( (rects1[0], rects2[0]), ('Low', 'High') )
+        ax.legend( (rects1[0], rects2[0]), ('Low transportation cost', 'High transportation cost') )
 
-        plt.savefig("{}/hist_median_{}_{}.pdf".format(self.fig_folder, "position", "extra_view"))
+        plt.savefig("{}/hist_high_t_low_t_{}_{}.pdf".format(self.fig_folder, "position", "extra_view"))
 
     def erase_stats_file(self):
 
@@ -508,12 +503,13 @@ class StatsExtractor(object):
     def get_extra_view_mean_std_for_each_positions(data):
         
         data = np.asarray(data)
-        n_positions = range(len(data[0]))
+        range_positions = range(len(data[0]))
 
-        mean_position_extra_view = [np.mean(data[:, col]) for col in n_positions]
-        std_position_extra_view = [np.std(data[:, col]) for col in n_positions]
+        # get means and stds for each positions in the economy
+        mean_std_position_extra_view = [(np.mean(data[:, col]), np.std(data[:, col])) 
+                                        for col in range_positions]
 
-        return mean_position_extra_view, std_position_extra_view
+        return mean_std_position_extra_view
 
 
 def main():
