@@ -14,8 +14,8 @@ class CustomerSimple:
 
         self.n_positions = kwargs["n_positions"]
         self.n_prices = kwargs["n_prices"]
-
-        self.extra_view = kwargs["extra_view"]
+        
+        self.extra_view = kwargs["extra_view"][self.x - 1]
 
         self.firm_choice = None
         self.utility = None

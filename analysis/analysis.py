@@ -5,6 +5,10 @@ from os import path, makedirs
 from time import time
 from scipy.stats import linregress
 from matplotlib import cm
+from scipy.interpolate import interp1d
+import numpy as np
+import pickle
+
 
 from graph.graph import FigureProducer
 from analysis.parameters import an_parameters
@@ -179,7 +183,8 @@ class StatsExtractor(object):
         low_std = [np.mean(position) for position in self.stats.data["std_position_extra_view_low"]]
         high_mean = [np.mean(position) for position in self.stats.data["mean_position_extra_view_high"]]
         high_std = [np.mean(position) for position in self.stats.data["std_position_extra_view_high"]]
-                
+        
+
         n = self.n_positions
         ind = np.arange(n)  # the x locations for the groups
         width = 0.35        # the width of the bars
@@ -193,6 +198,15 @@ class StatsExtractor(object):
                             color='red',
                             yerr=high_std,
                             error_kw=dict(elinewidth=2, ecolor='black'))
+
+        # approximate function low t cost
+        
+        obj = {"low_mean": low_mean, "high_mean": high_mean}
+        pickle.dump(obj, open("means.p", "wb"))
+        f = interp1d(ind, low_mean, kind='nearest')
+        ynew = f(low_mean)
+
+        plt.plot(ind, ynew)
 
         # axes and labels
         ax.set_xlim(-width, len(ind) + width)

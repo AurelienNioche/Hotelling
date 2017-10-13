@@ -33,8 +33,9 @@ def prepare():
 
     range_transportation_cost = [0.1, 2]
     utility_consumption = 21  # [n_prices+1, (n_prices*2) + 1]
-    range_customer_extra_view = {0: {"v_max": 15, "mean": 12, "v_min": 9}, 
-                                 1: {"v_max": 5, "mean": 2, "v_min": 1}}
+
+    # get means obtained in hotelling extended 21
+    range_customer_extra_view = pickle.load(open("means.p", "rb"))
 
     parameters_list = []
 

@@ -22,12 +22,12 @@ def run(args):
 
     param["transportation_cost"] = param["range_transportation_cost"][idx]
 
-    extra_view = get_extra_view(mean=param["range_customer_extra_view"][idx]["mean"], 
-                                std=1,
-                                v_min=param["range_customer_extra_view"][idx]["v_min"], 
-                                v_max=param["range_customer_extra_view"][idx]["v_max"])
+  #   extra_view = get_extra_view(mean=param["range_customer_extra_view"][idx]["mean"], 
+                                # std=1,
+                                # v_min=param["range_customer_extra_view"][idx]["v_min"], 
+                                # v_max=param["range_customer_extra_view"][idx]["v_max"])
 
-    param["customer_extra_view"] = extra_view
+    param["customer_extra_view"] = param["range_customer_extra_view"][idx]
 
     param["customer_alpha"] = np.random.uniform(*param["range_customer_alpha"])
     param["customer_temp"] = np.random.uniform(*param["range_customer_temp"])
@@ -52,14 +52,14 @@ def run(args):
     Backup(data=param, name="parameters", root_folder=cl_parameters["working_folder"], label=label)
 
 
-def get_extra_view(mean, std, v_min, v_max):
+# def get_extra_view(mean, std, v_min, v_max):
 
-    dist = np.random.normal(mean, std, 1000)
-    rounded_dist = np.round(dist)
-    final_dist = np.concatenate((rounded_dist[rounded_dist > v_min], 
-                                 rounded_dist[rounded_dist < v_max]))
+    # dist = np.random.normal(mean, std, 1000)
+    # rounded_dist = np.round(dist)
+    # final_dist = np.concatenate((rounded_dist[rounded_dist > v_min], 
+                                 # rounded_dist[rounded_dist < v_max]))
 
-    return np.random.choice(final_dist)
+    # return np.random.choice(final_dist)
 
 def get_param(idx):
 
