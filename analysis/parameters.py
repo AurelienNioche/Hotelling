@@ -2,9 +2,9 @@ from os import path
 
 
 an_parameters = {
-    "working_folder": path.expanduser("~/Desktop/HotellingExtended/data"),
-    "pickle_folder": path.expanduser("~/Desktop/HotellingExtended/data_pickle"),
-    "fig_folder": path.expanduser("~/Desktop/HotellingExtended/figures"),
+    "working_folder": path.expanduser("~/Desktop/HotellingExtended17/data"),
+    "pickle_folder": path.expanduser("~/Desktop/HotellingExtended17/data_pickle"),
+    "fig_folder": path.expanduser("~/Desktop/HotellingExtended17/figures_25"),
 
     "t_max": 5000,
     "time_window": 100,

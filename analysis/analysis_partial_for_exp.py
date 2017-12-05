@@ -480,8 +480,8 @@ def main():
 
     try:
         stats_extractor = StatsExtractor()
-        stats_extractor.run()
-        # stats_extractor.run(n_select=75, extrema_only=True)
+        # stats_extractor.run()
+        stats_extractor.run(n_select=25, extrema_only=True)
 
         figure_maker = FigureMaker(stats_extractor=stats_extractor)
         figure_maker.run()
